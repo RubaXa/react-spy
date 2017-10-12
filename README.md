@@ -139,7 +139,7 @@ import {intercept, UNCAUGHT} from 'react-spy';
 
 intercept({
 	'login-form': {
-		// Interception of chains, ex:
+		// Interception of all chains, ex:
 		//  - ["login-form", "forgot", "mount"]
 		//  - ["login-form", "forgot", "click"]
 		//  - etc
