@@ -77,7 +77,7 @@ ReactDOM.render(<App/>, document.body);
 
 ---
 
-<a name="spy></a>
+<a name="spy"></a>
 #### `spy<Props>(options)`
 Decorate the component to collect analytics
 
@@ -108,7 +108,7 @@ export default spy({
 
 ---
 
-<a name="addSpyObserver></a>
+<a name="addSpyObserver"></a>
 #### `addSpyObserver(fn: (chain: string[], detail: object) => void)`
 Add observer of events for for sending to the accounting system of analytics
 
@@ -130,7 +130,7 @@ unsubscribe();
 
 ---
 
-<a name="intercept></a>
+<a name="intercept"></a>
 #### `intercept(rules: InterceptRules) => void)`
 Intercepting the chain of events
 
