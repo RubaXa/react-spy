@@ -110,7 +110,7 @@ export default spy({
 
 <a name="addSpyObserver"></a>
 #### `addSpyObserver(fn: (chain: string[], detail: object) => void): UnsubsriberFn`
-Add observer of events for for sending to the accounting system of analytics
+Add observer of events for sending to the accounting system of analytics
 
 ```ts
 import {addSpyObserver} from 'react-spy';
