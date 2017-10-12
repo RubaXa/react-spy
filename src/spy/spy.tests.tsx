@@ -120,12 +120,37 @@ it('callbacks', () => {
 		}
 	});
 
-	const wrapper = mount(<Foo/>);
-
-	wrapper.find('.js-click').simulate('click');
+	mount(<Foo/>).find('.js-click').simulate('click');
 
 	expect(log).toEqual([
 		['foo', 'wow', 'click'],
+	]);
+});
+
+it('custom', () => {
+	const log = [];
+	const Foo = spy<Props>({
+		id: 'foo',
+		handle(chain) {log.push(chain)},
+	})(class extends React.Component<OnProps, null> {
+		private handleEvent: () => void;
+
+		constructor(props, context) {
+			super(props, context);
+			this.handleEvent = () => {
+				spy.send(this, ['custom', 'press']);
+			};
+		}
+
+		render() {
+			return <div className="js-click" onClick={this.handleEvent}>123</div>;
+		}
+	});
+
+	mount(<Foo/>).find('.js-click').simulate('click');
+
+	expect(log).toEqual([
+		['foo', 'custom', 'press'],
 	]);
 });
 //

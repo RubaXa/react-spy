@@ -31,7 +31,12 @@ export interface SpyOptions<Props> {
 	};
 }
 
-export default function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
+export interface ISpy {
+	<Props>(options: SpyOptions<Props>): ComponentDecorator<Props>;
+	send?: (component: React.Component, chain: string | string[], detail?: object) => void;
+}
+
+const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
 	const {
 		listen = [],
 		callbacks,
@@ -189,6 +194,32 @@ export default function spy<Props>(options: SpyOptions<Props> = {}): ComponentDe
 	});
 };
 
+function send(component: React.Component, chain: string | string[], detail?: object) {
+	const id = getSpyId(component);
+
+	if (id != null) {
+		const fullChain = [getSpyId(component)].concat(chain);
+		const {handle} = component[__spy__];
+		let parent = component;
+
+		while (parent = (parent.context && parent.context[__spyContext__])) {
+			fullChain.unshift(getSpyId(parent));
+			if (isHost(parent)) break;
+		}
+
+		if (handle && handle(fullChain) === false) {
+			return;
+		}
+
+		broadcast(fullChain, detail);
+	}
+}
+
+// Export
+spy.send = send;
+export default spy;
+
+
 
 //
 // Всякие приватные методы
@@ -226,23 +257,6 @@ function spyHandleEvent(component, {type, target}: Event) {
 	} while (cursor = cursor.parentNode);
 
 	send(component, type);
-}
-
-function send(component: React.Component, chain: string | string[], detail?: object) {
-	const fullChain = [getSpyId(component)].concat(chain);
-	const {handle} = component[__spy__];
-	let parent = component;
-
-	while (parent = (parent.context && parent.context[__spyContext__])) {
-		fullChain.unshift(getSpyId(parent));
-		if (isHost(parent)) break;
-	}
-
-	if (handle && handle(fullChain) === false) {
-		return;
-	}
-
-	broadcast(fullChain, detail);
 }
 
 function setupListeners(component, names, mode: 'add' | 'update' | 'remove') {

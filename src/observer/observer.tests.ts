@@ -6,10 +6,12 @@ it('core', () => {
 		log.push(chain, detail);
 	});
 
+	afterEach(() => {
+		unsubsribe();
+	});
+
 	broadcast(['foo']);
 	broadcast(['bar'], {val: 1});
-
-	unsubsribe();
 
 	expect(log).toEqual([
 		['foo'],

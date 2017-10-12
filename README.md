@@ -8,7 +8,7 @@ npm i --save react-spy
 
 
 ### Usage
-For Example with Google Analytics
+For example with Google Analytics
 
 ```js
 // Btn.js
@@ -26,6 +26,16 @@ import {spy} from 'react-spy';
 
 class LoginForm extends React.Component {
 	// ...
+	handleSubmit(evt) {
+		evt.preventDefault();
+		try {
+			await api.login(this.getFormData());
+			spy.send(this, 'success');
+		} catch (err) {
+			spy.send(this, 'failed', err);
+		}
+	}
+
 	render() {
 		return (
 			<form onSubmit={this.handleEvent}>
@@ -52,7 +62,7 @@ addSpyObserver(function (chain) {
 	ga('send', {
 		hitType: 'event',
 		eventCategory: chain[0], // ex: "login-form"
-		eventAction: chain.slice(0).join('_'), // ex: "forgot_click"
+		eventAction: chain.slice(1).join('_'), // ex: "forgot_click"
 	});
 });
 
@@ -61,13 +71,14 @@ ReactDOM.render(<App/>, document.body);
 
 
 ### API
- - [@spy](#spy) — decorator of react-components
-
+ - [spy](#spy) — decorator of react-components
+ - [addSpyObserver](#addSpyObserver) — add observer of events
+ - [intercept](#intercept) — intercepting the chain of events
 
 ---
 
 <a name="spy></a>
-#### `@spy<Props>(options)`
+#### `spy<Props>(options)`
 Decorate the component to collect analytics
 
  - `options`
@@ -93,6 +104,57 @@ export default spy({
 	value="Sign in"
 />
 // *click* -> ["login", "click"]
+```
+
+---
+
+<a name="addSpyObserver></a>
+#### `addSpyObserver(fn: (chain: string[], detail: object) => void)`
+Add observer of events for for sending to the accounting system of analytics
+
+```ts
+import {addSpyObserver} from 'react-spy';
+
+const unsubscribe = addSpyObserver(function (chain) {
+	// Send to GA
+	ga('send', {
+		hitType: 'event',
+		eventCategory: chain[0],
+		eventAction: chain.slice(0).join('_'),
+	});
+});
+
+// Somewhere
+unsubscribe();
+```
+
+---
+
+<a name="intercept></a>
+#### `intercept(rules: InterceptRules) => void)`
+Intercepting the chain of events
+
+```ts
+import {intercept, UNCAUGHT} from 'react-spy';
+
+intercept({
+	'login-form': {
+		// Interception of chains, ex:
+		//  - ["login-form", "forgot", "mount"]
+		//  - ["login-form", "forgot", "click"]
+		//  - etc
+		'forgot'(send, chain, detail) {
+			send(chain.concat('additional-id'));
+		},
+
+		// Processing of non-intercepted chains, ex:
+		//  - ["login-form", "login", "click"]
+		[UNCAUGHT](send, chain) {
+			send(chain.concat('UNCAUGHT'));
+			return false; // continue;
+		}
+	},
+});
 ```
 
 ---
