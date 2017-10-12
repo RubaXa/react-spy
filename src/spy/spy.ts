@@ -72,12 +72,13 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 			componentDidUpdate,
 		} = proto;
 
-		// Добавляем контекст
+		// Запрашиваем контекст
 		SpywareComponent.contextTypes = {
 			...Object(OrigComponent['contextTypes']),
 			[__spyContext__]: objectType,
 		};
 
+		// Обновляем контекст для детишек
 		SpywareComponent.childContextTypes = {
 			...Object(OrigComponent['childContextTypes']),
 			[__spyContext__]: objectType,
@@ -87,10 +88,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		proto.getChildContext = function () {
 			let context = getChildContext == null ? {} : getChildContext.call(this);
 
-			if (context == null) {
-				context = {};
-			}
-
+			(context == null) && (context = {});
 			context[__spyContext__] = this;
 
 			return context;
@@ -116,7 +114,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 				};
 			}
 
-			// Unmunt или есть события отличные от mount/unmount
+			// Unmount или есть события отличные от mount/unmount
 			if (listenLength || hasUnmountEvent) {
 				proto.componentWillUnmount = function () {
 					if (listenLength) {
@@ -168,11 +166,14 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 					}
 
 					render() {
+						// Fast clone
 						F.prototype = this.props;
 						const props = new F;
 
+						// Hmmm...
 						props.ref = this._setCmp;
 
+						// Override callbacks
 						keys.forEach(name => {
 							props[name] = overrideCallback(
 								this._send,
@@ -261,8 +262,8 @@ function spyHandleEvent(component, {type, target}: Event) {
 
 function setupListeners(component, names, mode: 'add' | 'update' | 'remove') {
 	const el = component[__spyDOMNode__];
-	const handler = component[__spyHandle__];
 	const cid = component[__cid__];
+	const handler = component[__spyHandle__];
 	const allListeners = el[__spy__] || (el[__spy__] = []);
 
 	allListeners[cid] = (mode !== 'remove');
@@ -283,9 +284,6 @@ function setupListeners(component, names, mode: 'add' | 'update' | 'remove') {
 function overrideCallback(send, props, originalMethod, spyFn) {
 	return function (...args) {
 		spyFn(send, args, props);
-
-		if (originalMethod) {
-			return originalMethod.apply(this, args);
-		}
+		return originalMethod && originalMethod.apply(this, args);
 	};
 }
