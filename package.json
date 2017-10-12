@@ -1,0 +1,57 @@
+{
+  "name": "react-spy",
+  "version": "0.1.0",
+  "description": "Сбор UX-статистики react-приложения",
+  "author": "RubaXa <ibnRubaXa@gmail.com",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "ts-build": "tsc",
+    "git-clean": "git clean -f",
+    "prepublish": "npm run test && npm run ts-build",
+    "postpublish": "npm run git-clean"
+  },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "src/*/*.js",
+    "src/*/*.d.ts"
+  ],
+  "devDependencies": {
+    "@types/enzyme": "^2.8.12",
+    "@types/jest": "^19.2.3",
+    "enzyme": "^3.1.0",
+    "enzyme-adapter-react-16": "^1.0.1",
+    "jest": "^20.0.3",
+    "raf": "^3.4.0",
+    "react-test-renderer": "^16.0.0",
+    "ts-jest": "^20.0.4",
+    "typescript": "^2.4.0"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "\\.tests\\.tsx?$",
+    "transformIgnorePatterns": [],
+    "setupFiles": [
+      "raf/polyfill"
+    ],
+    "setupTestFrameworkScriptFile": "<rootDir>/__jest__/extensions.ts",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ]
+  },
+  "dependencies": {
+    "@types/prop-types": "^15.5.2",
+    "@types/react": "^16.0.10",
+    "@types/react-dom": "^16.0.1",
+    "prop-types": "^15.6.0",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
+  }
+}
