@@ -109,7 +109,7 @@ export default spy({
 ---
 
 <a name="addSpyObserver"></a>
-#### `addSpyObserver(fn: (chain: string[], detail: object) => void)`
+#### `addSpyObserver(fn: (chain: string[], detail: object) => void): UnsubsriberFn`
 Add observer of events for for sending to the accounting system of analytics
 
 ```ts
@@ -131,7 +131,7 @@ unsubscribe();
 ---
 
 <a name="intercept"></a>
-#### `intercept(rules: InterceptRules) => void)`
+#### `intercept(rules: InterceptRules)`
 Intercepting the chain of events
 
 ```ts
