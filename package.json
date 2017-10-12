@@ -1,7 +1,7 @@
 {
   "name": "react-spy",
   "version": "0.1.0",
-  "description": "Collect UX-analytics of your react-application (for ex: clicks, shows, etc.).",
+  "description": "Collect UX-analytics of your react-application (for ex: clicks, shows, etc.)",
   "author": "RubaXa <ibnRubaXa@gmail.com",
   "license": "MIT",
   "main": "index.js",
