@@ -14,7 +14,7 @@ For example with Google Analytics
 // Btn.js
 import {spy} from 'react-spy';
 
-const Btn = ({name, value}) => <button name={name}>{value}</button>;
+const Btn = ({name, value}) => (<button name={name}>{value}</button>);
 export default spy({
 	id: ({name}) => name, // Computed `id` on based component properties
 	listen: ['click'],    // DOM-events list
