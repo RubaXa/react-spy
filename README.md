@@ -7,7 +7,8 @@ npm i --save react-spy
 ```
 
 
-### Usage with Google Analytics
+### Usage
+For Example with Google Analytics
 
 ```js
 // Btn.js
