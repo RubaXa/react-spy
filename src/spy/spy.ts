@@ -115,7 +115,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 			};
 
 			// Переопределяем `props`
-			Object.defineProperty(proto.prototype, 'props', {
+			Object.defineProperty(proto, 'props', {
 				configurable: false,
 
 				get() {
