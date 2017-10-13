@@ -6,6 +6,10 @@ Collect UX-analytics of your react-application (for ex: clicks, shows, etc.)
 npm i --save react-spy
 ```
 
+### Features
+ - Easy integration with any ui-library (ex [Ant-Design](./examples/antd/)
+ - Full control over the events
+
 
 ### Usage
 For example with Google Analytics
