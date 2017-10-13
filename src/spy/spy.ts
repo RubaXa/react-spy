@@ -4,17 +4,24 @@ import {object as objectType} from 'prop-types';
 import {setHiddenField, toComponentClass} from '../utils/utils';
 import {broadcast} from '../observer/observer';
 
+let cid = 0;
+const F = function () {};
 const postfix = Date.now().toString(36);
 
 const __spy__ = `__options-${postfix}__`;
 const __spyContext__ = `__context-${postfix}__`;
 const __spyDOMNode__ = `__domNode-${postfix}__`;
 const __spyHandle__ = `__handle-${postfix}__`;
+const __spyLocalSend__ = `__localSend-${postfix}__`;
 
-let cid = 0;
 const __cid__ = `__cid-${postfix}__`;
+const __props__ = `__props-${postfix}__`;
+const __patchedProps__ = `__patchedProps-${postfix}__`;
+const __usePatchedProps__ = `__usePatchedProps-${postfix}__`;
 
-export type ComponentDecorator<P> = (Class: ComponentClass<P> | StatelessComponent<P>) => ComponentClass<P & {spyId?: string}>;
+export type CmpClass<P> = ComponentClass<P> | StatelessComponent<P>;
+export type SpywareClass<P> = ComponentClass<P & {spyId?: string}>;
+export type ComponentDecorator<P> = (Class: CmpClass<P>) => SpywareClass<P>;
 
 export interface SpyOptions<Props> {
 	id?: string | ((props: Props, context) => string);
@@ -33,20 +40,21 @@ export interface SpyOptions<Props> {
 
 export interface ISpy {
 	<Props>(options: SpyOptions<Props>): ComponentDecorator<Props>;
-	send?: (component: React.Component, chain: string | string[], detail?: object) => void;
+	send?: (component: Component, chain: string | string[], detail?: object) => void;
 }
 
 const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
 	const {
 		listen = [],
-		callbacks,
+		callbacks = {},
 	} = options;
 	const hasMountEvent = listen.includes('mount');
 	const hasUnmountEvent = listen.includes('unmount');
+	const callbackKeys = Object.keys(callbacks);
 
-	return ((OrigComponent: ComponentClass<Props> | StatelessComponent<Props>) => {
+	return ((OrigComponent: CmpClass<Props>) => {
 		// Создаём наследника и патчим его
-		let SpywareComponent = class SpywareComponent extends toComponentClass<Props>(OrigComponent) {
+		class SpywareComponent extends toComponentClass<Props>(OrigComponent) {
 			constructor(props, context) {
 				super(props, context);
 
@@ -55,8 +63,11 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 				setHiddenField(this, __spyHandle__, (evt) => {
 					spyHandleEvent(this, evt);
 				});
+				setHiddenField(this, __spyLocalSend__, (chain: string | string[], detail: object) => {
+					send(this, chain, detail);
+				});
 			}
-		};
+		}
 
 		// Получаем прототип для патчинга
 		const proto = SpywareComponent.prototype as (Component & {
@@ -66,6 +77,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 
 		// Сохраняем оригинальные методы
 		const {
+			render,
 			getChildContext,
 			componentDidMount,
 			componentWillUnmount,
@@ -93,6 +105,41 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 
 			return context;
 		};
+
+		// Патчим объекта так, чтобы можно было переписать props, а то они заморожены
+		if (callbackKeys.length) {
+			proto.render = function () {
+				// Потому что нельзя сразу возвращать `patchedProps`, React ругается
+				this[__usePatchedProps__] = true;
+				return render.call(this);
+			};
+
+			// Переопределяем `props`
+			Object.defineProperty(proto.prototype, 'props', {
+				configurable: false,
+
+				get() {
+					return this[this[__usePatchedProps__] ? __patchedProps__ : __props__];
+				},
+
+				set(origProps) {
+					const patchedProps = (F.prototype = origProps, new F);
+
+					// Override callbacks
+					callbackKeys.forEach(name => {
+						patchedProps[name] = overrideCallback(
+							this[__spyLocalSend__],
+							origProps,
+							origProps[name],
+							callbacks[name],
+						);
+					});
+
+					this[__props__] = origProps;
+					this[__patchedProps__] = patchedProps;
+				}
+			});
+		}
 
 		// Количество слушателей
 		let listenLength = listen.length;
@@ -141,54 +188,6 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 					}
 				};
 			}
-		}
-
-		if (callbacks) {
-			SpywareComponent = (function (SpywareComponent: ComponentClass<Props>) {
-				const F = function() {};
-				const keys = Object.keys(callbacks);
-
-				class SpywareComponentWithCallbacks extends Component<Props, null> {
-					private _cmp: Component<Props, null>;
-					private _send: (chain: string | string[], detail: object) => void;
-					private _setCmp: (cmp: Component<Props, null>) => void;
-
-					constructor(props) {
-						super(props);
-
-						this._send = (chain: string | string[], detail: object) => {
-							send(this._cmp, chain, detail);
-						};
-
-						this._setCmp = (cmp) => {
-							this._cmp = cmp;
-						};
-					}
-
-					render() {
-						// Fast clone
-						F.prototype = this.props;
-						const props = new F;
-
-						// Hmmm...
-						props.ref = this._setCmp;
-
-						// Override callbacks
-						keys.forEach(name => {
-							props[name] = overrideCallback(
-								this._send,
-								this.props,
-								this.props[name],
-								callbacks[name],
-							)
-						});
-
-						return createElement(SpywareComponent, props);
-					}
-				}
-
-				return SpywareComponentWithCallbacks;
-			})(SpywareComponent)
 		}
 
 		return SpywareComponent;
