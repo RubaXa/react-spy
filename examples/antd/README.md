@@ -19,4 +19,4 @@ Example of integration
 
  - `npm i`
  - `npm start`
-
+ - and see `DevTools > Console`
