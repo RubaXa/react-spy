@@ -88,7 +88,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 			componentDidUpdate,
 		} = proto;
 
-		SpywareComponent.displayName = `Spy(${OrigComponent.displayName || OrigComponent.name})`;
+		SpywareComponent.displayName = `Spy(${OrigComponent.displayName || OrigComponent['name']})`;
 
 		// Добавляем в propsType
 		SpywareComponent.propTypes = {
