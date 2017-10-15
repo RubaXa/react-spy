@@ -1,5 +1,6 @@
 import React from 'react';
 import {Card, Form, Icon, Input, Button, Row, Col} from 'antd';
+import {spy, Spy} from 'react-spy';
 
 const FormItem = Form.Item;
 
@@ -17,6 +18,7 @@ class HorizontalLoginForm extends React.Component {
 		e.preventDefault();
 		this.props.form.validateFields((err, values) => {
 			if (!err) {
+				spy.send(this, ['validation', 'successfully']);
 				console.log('Received values of form: ', values);
 			}
 		});
@@ -31,10 +33,7 @@ class HorizontalLoginForm extends React.Component {
 
 		return (
 			<Card title="Login Form" style={{maxWidth: 500, minWidth: 270, margin: '5vw auto'}}>
-				<Form
-					spyId="login-form"
-					onSubmit={this.handleSubmit}
-				>
+				<Form onSubmit={this.handleSubmit}>
 					<FormItem
 						validateStatus={userNameError ? 'error' : ''}
 						help={userNameError || ''}
@@ -74,12 +73,9 @@ class HorizontalLoginForm extends React.Component {
 							</Col>
 
 							<Col span={12}>
-								<a
-									spyId="forgot"
-									href="#forgot"
-								>
-									Forgot password
-								</a>
+								<Spy id="forgot" listen={['click']}>
+									<a href="#path-to">Forgot password</a>
+								</Spy>
 							</Col>
 						</Row>
 					</FormItem>
@@ -89,4 +85,7 @@ class HorizontalLoginForm extends React.Component {
 	}
 }
 
-export default Form.create()(HorizontalLoginForm);
+export default Form.create()(spy({
+	id: 'login-form',
+	listen: ['mount', 'unmount'],
+})(HorizontalLoginForm));

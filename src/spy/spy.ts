@@ -1,6 +1,6 @@
 import {createElement, Component, ComponentClass, StatelessComponent} from 'react';
 import {findDOMNode} from 'react-dom';
-import {object as objectType} from 'prop-types';
+import {object as objectType, string as stringType} from 'prop-types';
 import {setHiddenField, toComponentClass} from '../utils/utils';
 import {broadcast} from '../observer/observer';
 
@@ -52,6 +52,10 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 	const hasUnmountEvent = listen.includes('unmount');
 	const callbackKeys = Object.keys(callbacks);
 
+	if (!options.propName) {
+		options.propName = 'spyId';
+	}
+
 	return ((OrigComponent: CmpClass<Props>) => {
 		// Создаём наследника и патчим его
 		class SpywareComponent extends toComponentClass<Props>(OrigComponent) {
@@ -59,7 +63,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 				super(props, context);
 
 				setHiddenField(this, __cid__, ++cid);
-				setHiddenField(this, __spy__, options);
+				setHiddenField(this, __spy__, options, true);
 				setHiddenField(this, __spyHandle__, (evt) => {
 					spyHandleEvent(this, evt);
 				});
@@ -84,6 +88,14 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 			componentDidUpdate,
 		} = proto;
 
+		SpywareComponent.displayName = `Spy(${OrigComponent.displayName || OrigComponent.name})`;
+
+		// Добавляем в propsType
+		SpywareComponent.propTypes = {
+			...Object(OrigComponent['propTypes']),
+			[options.propName]: stringType,
+		};
+
 		// Запрашиваем контекст
 		SpywareComponent.contextTypes = {
 			...Object(OrigComponent['contextTypes']),
@@ -107,39 +119,43 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		};
 
 		// Патчим объекта так, чтобы можно было переписать props, а то они заморожены
-		if (callbackKeys.length) {
-			proto.render = function () {
-				// Потому что нельзя сразу возвращать `patchedProps`, React ругается
-				this[__usePatchedProps__] = true;
-				return render.call(this);
-			};
+		proto.render = function () {
+			// Потому что нельзя сразу возвращать `patchedProps`, React ругается
+			this[__usePatchedProps__] = true;
+			return render.call(this);
+		};
 
-			// Переопределяем `props`
-			Object.defineProperty(proto.prototype, 'props', {
-				configurable: false,
+		// Переопределяем `props`
+		Object.defineProperty(proto, 'props', {
+			configurable: false,
 
-				get() {
-					return this[this[__usePatchedProps__] ? __patchedProps__ : __props__];
-				},
+			get() {
+				return this[this[__usePatchedProps__] ? __patchedProps__ : __props__];
+			},
 
-				set(origProps) {
-					const patchedProps = (F.prototype = origProps, new F);
+			set(origProps) {
+				if (this[__patchedProps__] !== origProps) {
+					const patchedProps = {...origProps};
 
-					// Override callbacks
-					callbackKeys.forEach(name => {
-						patchedProps[name] = overrideCallback(
-							this[__spyLocalSend__],
-							origProps,
-							origProps[name],
-							callbacks[name],
-						);
-					});
+					delete patchedProps[options.propName];
+
+					if (callbackKeys.length) {
+						// Override callbacks
+						callbackKeys.forEach(name => {
+							patchedProps[name] = overrideCallback(
+								this[__spyLocalSend__],
+								origProps,
+								origProps[name],
+								callbacks[name],
+							);
+						});
+					}
 
 					this[__props__] = origProps;
 					this[__patchedProps__] = patchedProps;
 				}
-			});
-		}
+			}
+		});
 
 		// Количество слушателей
 		let listenLength = listen.length;
@@ -184,7 +200,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 					if (newEl !== prevEl) {
 						setupListeners(this, listen, 'remove');
 						this[__spyDOMNode__] = newEl;
-						setupListeners(this, listen, 'update');
+						setupListeners(this, listen, 'add');
 					}
 				};
 			}
@@ -203,8 +219,11 @@ function send(component: React.Component, chain: string | string[], detail?: obj
 		let parent = component;
 
 		while (parent = (parent.context && parent.context[__spyContext__])) {
-			fullChain.unshift(getSpyId(parent));
-			if (isHost(parent)) break;
+			const nextId = getSpyId(parent);
+			if (nextId) {
+				fullChain.unshift(nextId);
+				if (isHost(parent)) break;
+			}
 		}
 
 		if (handle && handle(fullChain) === false) {
@@ -217,6 +236,7 @@ function send(component: React.Component, chain: string | string[], detail?: obj
 
 // Export
 spy.send = send;
+export {__spy__, __spyDOMNode__, __spyHandle__};
 export default spy;
 
 
@@ -225,12 +245,16 @@ export default spy;
 // Всякие приватные методы
 //
 function getSpyId(component): string {
-	const {id, propName = 'spyId'} = component[__spy__];
-	const props = component.props;
-	let value = props[propName];
+	let value;
 
-	if (value == null) {
-		value = typeof id === 'function' ? id(props, component.context) : id;
+	if (component.hasOwnProperty(__spy__)) {
+		const {id, propName} = component[__spy__];
+		const props = component[__props__];
+		value = props[propName];
+
+		if (value == null) {
+			value = typeof id === 'function' ? id(props, component.context) : id;
+		}
 	}
 
 	return value;
@@ -259,7 +283,7 @@ function spyHandleEvent(component, {type, target}: Event) {
 	send(component, type);
 }
 
-function setupListeners(component, names, mode: 'add' | 'update' | 'remove') {
+export function setupListeners(component, names, mode: 'add' | 'remove') {
 	const el = component[__spyDOMNode__];
 	const cid = component[__cid__];
 	const handler = component[__spyHandle__];
@@ -268,6 +292,10 @@ function setupListeners(component, names, mode: 'add' | 'update' | 'remove') {
 	allListeners[cid] = (mode !== 'remove');
 
 	names.forEach(name => {
+		if (name === 'mount' || name === 'unmount') {
+			return;
+		}
+
 		if (mode === 'add') {
 			allListeners.push(name);
 		} else if (mode === 'remove') {
