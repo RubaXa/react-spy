@@ -60,6 +60,9 @@ typings/
 # NMPy
 .npmyrc
 
+# IDE
+.idea
+
 # Distributive
 dist
 compiled

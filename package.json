@@ -5,6 +5,7 @@
   "author": "RubaXa <ibnRubaXa@gmail.com",
   "license": "MIT",
   "main": "index.js",
+  "repository": "git@github.com:rubaxa/react-spy.git",
   "scripts": {
     "test": "jest --coverage",
     "ts-build": "tsc",

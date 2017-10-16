@@ -1,9 +1,12 @@
 import {findInterceptor} from '../intercept/intercept';
 
+export type ErrorDetail = {error: Error, info: object, chain: string[]};
 export type ObserverFn = (chain: string[], detail?: object) => void;
+export type ErrorObserverFn = (detail: ErrorDetail) => void;
 export type UnsubsriberFn = () => void;
 
 const observers: ObserverFn[] = [];
+const errorObservers: ErrorObserverFn[] = [];
 
 export function addSpyObserver(fn: ObserverFn): UnsubsriberFn {
 	observers.push(fn);
@@ -13,9 +16,24 @@ export function addSpyObserver(fn: ObserverFn): UnsubsriberFn {
 	};
 }
 
+
+export function addSpyErrorObserver(fn: ErrorObserverFn): UnsubsriberFn {
+	errorObservers.push(fn);
+
+	return () => {
+		errorObservers.splice(errorObservers.indexOf(fn), 1);
+	};
+}
+
 export function forceBroadcast(chain: string[], detail: object = {}) {
 	observers.forEach(fn => {
 		fn(chain, detail);
+	});
+}
+
+export function broadcastError(detail: ErrorDetail) {
+	errorObservers.forEach(fn => {
+		fn(detail);
 	});
 }
 

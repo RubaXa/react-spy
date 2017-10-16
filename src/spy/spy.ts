@@ -1,8 +1,8 @@
-import {createElement, Component, ComponentClass, StatelessComponent} from 'react';
+import {Component, ComponentClass, StatelessComponent} from 'react';
 import {findDOMNode} from 'react-dom';
 import {object as objectType, string as stringType} from 'prop-types';
 import {setHiddenField, toComponentClass} from '../utils/utils';
-import {broadcast} from '../observer/observer';
+import {broadcast, broadcastError} from '../observer/observer';
 
 let cid = 0;
 const F = function () {};
@@ -48,6 +48,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		listen = [],
 		callbacks = {},
 	} = options;
+	const hasErrorEvent = listen.includes('error');
 	const hasMountEvent = listen.includes('mount');
 	const hasUnmountEvent = listen.includes('unmount');
 	const callbackKeys = Object.keys(callbacks);
@@ -83,6 +84,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		const {
 			render,
 			getChildContext,
+			componentDidCatch,
 			componentDidMount,
 			componentWillUnmount,
 			componentDidUpdate,
@@ -160,6 +162,18 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		// Количество слушателей
 		let listenLength = listen.length;
 
+		if (hasErrorEvent) {
+			listenLength--;
+			proto.componentDidCatch = function (error, info) {
+				broadcastError({
+					chain: getSpyChain(this),
+					error,
+					info,
+				});
+				componentDidCatch && componentDidCatch.call(this, error, info);
+			};
+		}
+
 		if (listenLength) {
 			// Так можно понять если у нас события помимо mount/unmount
 			listenLength -= (+hasMountEvent + +hasUnmountEvent);
@@ -210,21 +224,35 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 	});
 };
 
-function send(component: React.Component, chain: string | string[], detail?: object) {
+function getSpyChain(component: React.Component) {
 	const id = getSpyId(component);
+	const chain = [];
 
 	if (id != null) {
-		const fullChain = [getSpyId(component)].concat(chain);
-		const {handle} = component[__spy__];
 		let parent = component;
 
 		while (parent = (parent.context && parent.context[__spyContext__])) {
 			const nextId = getSpyId(parent);
+
 			if (nextId) {
-				fullChain.unshift(nextId);
+				chain.unshift(nextId);
 				if (isHost(parent)) break;
 			}
 		}
+
+		chain.push(id);
+	}
+
+	return chain;
+}
+
+function send(component: React.Component, chain: string | string[], detail?: object) {
+	let fullChain = getSpyChain(component);
+
+	if (fullChain.length) {
+		const {handle} = component[__spy__];
+
+		fullChain = fullChain.concat(chain);
 
 		if (handle && handle(fullChain) === false) {
 			return;
@@ -236,7 +264,12 @@ function send(component: React.Component, chain: string | string[], detail?: obj
 
 // Export
 spy.send = send;
-export {__spy__, __spyDOMNode__, __spyHandle__};
+export {
+	__spy__,
+	__spyDOMNode__,
+	__spyHandle__,
+	getSpyChain,
+};
 export default spy;
 
 
@@ -292,7 +325,7 @@ export function setupListeners(component, names, mode: 'add' | 'remove') {
 	allListeners[cid] = (mode !== 'remove');
 
 	names.forEach(name => {
-		if (name === 'mount' || name === 'unmount') {
+		if (name === 'mount' || name === 'unmount' || name === 'error') {
 			return;
 		}
 

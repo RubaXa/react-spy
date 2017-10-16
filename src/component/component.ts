@@ -1,13 +1,13 @@
 import * as React from 'react';
-import spy, {__spy__, __spyDOMNode__, setupListeners, SpyOptions} from '../spy/spy';
+import spy, {__spy__, __spyDOMNode__, getSpyChain, setupListeners, SpyOptions} from '../spy/spy';
 import {findDOMNode} from 'react-dom';
 import {setHiddenField} from '../utils/utils';
-
+import {broadcastError} from '../observer/observer';
 export type SpyProps = SpyOptions<{}> & {children: JSX.Element};
 
 const {isArray} = Array;
 
-class Wrapper extends React.PureComponent<SpyProps, null> {
+class Wrapper extends React.PureComponent<SpyProps> {
 	constructor(props, context) {
 		super(props, context);
 		this[__spy__] = props;
@@ -15,6 +15,14 @@ class Wrapper extends React.PureComponent<SpyProps, null> {
 
 	componentWillReceiveProps(newProps) {
 		this[__spy__] = newProps;
+	}
+
+	componentDidCatch(error, info) {
+		broadcastError({
+			chain: getSpyChain(this),
+			error,
+			info,
+		});
 	}
 
 	componentDidMount() {

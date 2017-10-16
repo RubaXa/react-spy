@@ -1,6 +1,6 @@
-import {addSpyObserver, broadcast} from './observer';
+import {addSpyErrorObserver, addSpyObserver, broadcast, broadcastError} from './observer';
 
-it('core', () => {
+it('addSpyObserver', () => {
 	const log = [];
 	const unsubsribe = addSpyObserver((chain, detail) => {
 		log.push(chain, detail);
@@ -18,5 +18,26 @@ it('core', () => {
 		{},
 		['bar'],
 		{val: 1},
+	]);
+});
+
+
+it('addSpyErrorObserver', () => {
+	const log = [];
+	const detail = {error: new Error('OK'), info: {}, chain: []};
+	const unerr = addSpyErrorObserver(({error, info, chain}) => {
+		log.push(error, info, chain);
+	});
+
+	afterEach(() => {
+		unerr();
+	});
+
+	broadcastError(detail);
+
+	expect(log).toEqual([
+		detail.error,
+		detail.info,
+		detail.chain,
 	]);
 });

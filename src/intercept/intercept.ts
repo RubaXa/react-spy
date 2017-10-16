@@ -1,3 +1,6 @@
+export const UNCAUGHT = '<UNCAUGHT>';
+
+
 export type Interceptor = (
 	send: (chain: string | string[], detail?: object) => void,
 	chain: string[],
@@ -62,5 +65,3 @@ export function intercept(rules: InterceptRules) {
 export function findInterceptor(chain: string[]): Interceptor | null {
 	return find(currentRules, chain, 0) || null;
 }
-
-export const UNCAUGHT = '<UNCAUGHT>';

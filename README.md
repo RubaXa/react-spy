@@ -59,14 +59,22 @@ export default spy({
 
 
 // boot.js
-import {addSpyObserver} from 'react-spy';
+import {addSpyObserver, addSpyErrorsObserver} from 'react-spy';
 
-addSpyObserver(function (chain) {
+addSpyObserver(chain => {
 	// Send to GA
 	ga('send', {
 		hitType: 'event',
 		eventCategory: chain[0], // ex: "login-form"
 		eventAction: chain.slice(1).join('_'), // ex: "forgot_click"
+	});
+});
+
+// Component Errors
+addSpyErrorObserver(({error}) => {
+	ga('send', 'exception', {
+		exDescription: error.message,
+		exFatal: false,
 	});
 });
 
@@ -87,7 +95,7 @@ Decorate the component to collect analytics
 
  - `options`
    - **id**: `string | (props, context?) => string` — default `id`
-   - **listen**: `string[]` — DOM-events to listen + `mount` and `unmount`
+   - **listen**: `string[]` — DOM-events to listen + `error`, `mount` and `unmount`
    - **callbacks** — list of observed callbacks that are passed to it via `props`
    - **propName**: `string` — name of the property responsible for the spy's `id`, by default` spyId`
    - **host**: `boolean`
@@ -117,19 +125,45 @@ export default spy({
 Add observer of events for sending to the accounting system of analytics
 
 ```ts
-import {addSpyObserver} from 'react-spy';
+import {addSpyErrorObserver} from 'react-spy';
 
-const unsubscribe = addSpyObserver(function (chain) {
+const unsubscribe = addSpyErrorObserver(chain => {
 	// Send to GA
-	ga('send', {
-		hitType: 'event',
-		eventCategory: chain[0],
-		eventAction: chain.slice(0).join('_'),
+	ga('send', 'exception', {
+		exDescription: error.message,
+		exFatal: false,
 	});
 });
 
-// Somewhere
+// Somewhere (if you need to)
 unsubscribe();
+```
+
+---
+
+<a name="addSpyErrorObserver"></a>
+#### `addSpyErrorObserver(fn: (detail: ErrorDetail) => void): UnsubsriberFn`
+Add observer of component errors
+
+ - `detail`
+   - **error**: `Error` — JavaScript error
+   - **info**: `object` — React error info
+   - **chain** `string[]` — spy `id` chain
+
+```ts
+import {addSpyObserver} from 'react-spy';
+
+addSpyErrorObserver(({error, chain}) => {
+	// Send to GA
+	ga('send', 'exception', {
+		exDescription: error.message,
+		exFatal: false,
+	});
+
+	// For dev
+	console.error('[react-spy]', chain.join(' -> '));
+	console.error(error);
+});
 ```
 
 ---
