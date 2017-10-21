@@ -1,6 +1,6 @@
 React Spy
 ---------
-Collect UX-analytics of your react-application (ex: clicks, shows, etc.)
+A set of utilities for collecting UX-analytics of your React-application (ex: clicks, shows, errors and etc.)
 
 ```
 npm i --save react-spy
