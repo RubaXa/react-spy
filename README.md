@@ -125,13 +125,14 @@ export default spy({
 Add observer of events for sending to the accounting system of analytics
 
 ```ts
-import {addSpyErrorObserver} from 'react-spy';
+import {addSpyObserver} from 'react-spy';
 
-const unsubscribe = addSpyErrorObserver(chain => {
+const unsubscribe = addSpyObserver(chain => {
 	// Send to GA
-	ga('send', 'exception', {
-		exDescription: error.message,
-		exFatal: false,
+	ga('send', {
+		hitType: 'event',
+		eventCategory: chain[0], // ex: "login-form"
+		eventAction: chain.slice(1).join('_'), // ex: "forgot_click"
 	});
 });
 
@@ -151,7 +152,7 @@ Add observer of component errors
    - **chain** `string[]` — spy `id` chain
 
 ```ts
-import {addSpyObserver} from 'react-spy';
+import {addSpyErrorObserver} from 'react-spy';
 
 addSpyErrorObserver(({error, chain}) => {
 	// Send to GA
