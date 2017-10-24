@@ -10,6 +10,20 @@ npm i --save react-spy
  - Easy integration with any ui-library (ex: [Ant-Design](./examples/antd/))
  - Full control over the events
 
+---
+
+### API
+ - [spy](#spy) — decorator of react-components
+ - [addSpyObserver](#addSpyObserver) — add observer of events
+ - [addSpyErrorObserver](#addSpyErrorObserver) — add observer of errors
+ - [intercept](#intercept) — intercepting a chain of events
+ - Components
+   - [Spy](#Spy)
+ - Low Level
+   - [broadcast](#broadcast) — broadcast any chain of events
+   - [broadcastError](#broadcastError) — broadcast any error
+
+---
 
 ### Usage
 For example with Google Analytics
@@ -80,18 +94,6 @@ addSpyErrorObserver(({error}) => {
 
 ReactDOM.render(<App/>, document.body);
 ```
-
-
-### API
- - [spy](#spy) — decorator of react-components
- - [addSpyObserver](#addSpyObserver) — add observer of events
- - [addSpyErrorObserver](#addSpyErrorObserver) — add observer of errors
- - [intercept](#intercept) — intercepting a chain of events
- - Components
-   - [Spy](#Spy)
- - Low Level
-   - [broadcast](#broadcast) — broadcast any chain of events
-   - [broadcastError](#broadcastError) — broadcast any error
 
 ---
 
