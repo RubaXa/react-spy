@@ -85,7 +85,13 @@ ReactDOM.render(<App/>, document.body);
 ### API
  - [spy](#spy) — decorator of react-components
  - [addSpyObserver](#addSpyObserver) — add observer of events
- - [intercept](#intercept) — intercepting the chain of events
+ - [addSpyErrorObserver](#addSpyErrorObserver) — add observer of errors
+ - [intercept](#intercept) — intercepting a chain of events
+ - Components
+   - [Spy](#Spy)
+ - Low Level
+   - [broadcast](#broadcast) — broadcast any chain of events
+   - [broadcastError](#broadcastError) — broadcast any error
 
 ---
 
@@ -171,7 +177,7 @@ addSpyErrorObserver(({error, chain}) => {
 
 <a name="intercept"></a>
 #### `intercept(rules: InterceptRules)`
-Intercepting the chain of events
+Intercepting a chain of events
 
 ```ts
 import {intercept, UNCAUGHT} from 'react-spy';
@@ -193,6 +199,64 @@ intercept({
 			return false; // continue;
 		}
 	},
+});
+```
+
+---
+
+<a name="Spy"></a>
+#### `<Spy>...</Spy>`
+
+```jsx
+import {Spy} from 'react-spy';
+
+const SomeFragment = ({condition, onShowDetail}) => (
+	<div>
+		<Spy id="top">
+			<Button name="detail" value="Show detail" onClick={onShowDetail}/>
+		</Spy>
+
+		{condition &&
+			<Spy id="bottom" listen={['mount', 'unmount'}>
+				Detail
+			</Spy>
+		}
+	</div>
+);
+
+// 1. *click on button* -> ["top", "detail", "click"]
+// 2. *mounting* -> ["bottom", "mount"]
+```
+
+---
+
+<a name="broadcast"></a>
+#### `broadcast(chain: string[], detail?: object)`
+
+```ts
+import {broadcast} from 'react-spy';
+
+broadcast(['custom', 'event', 'chain'], {value: 'Wow'});
+```
+
+---
+
+
+<a name="broadcastError"></a>
+#### `broadcastError(detail: ErrorDetail)`
+
+ - `detail`
+   - **error**: `Error` — JavaScript error
+   - **chain** `string[]` — spy `id` chain
+   - **info**: `object` — React error info (optional)
+
+
+```ts
+import {broadcastError} from 'react-spy';
+
+broadcastError({
+	error: new Error('Internal Error'),
+	chain: ['login', 'submit', 'failed'],
 });
 ```
 

@@ -1,6 +1,6 @@
 import {findInterceptor} from '../intercept/intercept';
 
-export type ErrorDetail = {error: Error, info: object, chain: string[]};
+export type ErrorDetail = {error: Error, chain: string[], info?: object};
 export type ObserverFn = (chain: string[], detail?: object) => void;
 export type ErrorObserverFn = (detail: ErrorDetail) => void;
 export type UnsubsriberFn = () => void;
