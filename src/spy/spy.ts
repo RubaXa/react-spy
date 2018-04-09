@@ -39,7 +39,7 @@ export interface SpyOptions<Props> {
 }
 
 export interface ISpy {
-	<Props>(options: SpyOptions<Props>): ComponentDecorator<Props>;
+	<Props>(options: SpyOptions<Props & {spyId?: string}>): ComponentDecorator<Props>;
 	send?: (component: Component, chain: string | string[], detail?: object) => void;
 }
 
@@ -57,9 +57,9 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		options.propName = 'spyId';
 	}
 
-	return ((OrigComponent: CmpClass<Props>) => {
+	return ((OrigComponent: CmpClass<Props & {spyId?: string}>) => {
 		// Создаём наследника и патчим его
-		class SpywareComponent extends toComponentClass<Props>(OrigComponent) {
+		class SpywareComponent extends toComponentClass<Props & {spyId?: string}>(OrigComponent) {
 			constructor(props, context) {
 				super(props, context);
 
