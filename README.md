@@ -73,7 +73,7 @@ export default spy({
 
 
 // boot.js
-import {addSpyObserver, addSpyErrorsObserver} from 'react-spy';
+import {addSpyObserver, addSpyErrorObserver} from 'react-spy';
 
 addSpyObserver(chain => {
 	// Send to GA
