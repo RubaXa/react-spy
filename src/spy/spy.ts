@@ -24,7 +24,7 @@ export type SpywareClass<P> = ComponentClass<P & {spyId?: string}>;
 export type ComponentDecorator<P> = (Class: CmpClass<P>) => SpywareClass<P>;
 
 export interface SpyOptions<Props> {
-	id?: string | ((props: Props, context) => string);
+	id?: string | ((props: Props, context: object) => string);
 	propName?: string;
 	host?: boolean;
 	listen?: string[];
@@ -60,7 +60,7 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 	return ((OrigComponent: CmpClass<Props & {spyId?: string}>) => {
 		// Создаём наследника и патчим его
 		class SpywareComponent extends toComponentClass<Props & {spyId?: string}>(OrigComponent) {
-			constructor(props, context) {
+			constructor(props, context: object) {
 				super(props, context);
 
 				setHiddenField(this, __cid__, ++cid);
