@@ -153,6 +153,35 @@ it('custom', () => {
 		['foo', 'custom', 'press'],
 	]);
 });
+
+it('InHOC', () => {
+	const log = [];
+
+	class First extends React.Component<{}, null> {
+		render() {
+			return <div className="js-click" onClick={() => {
+				spy.send(this, ['click']);
+			}}></div>;
+		}
+	}
+
+	class Second extends React.Component<{}, null> {
+		render() {
+			return <First {...this.props}/>
+		}
+	}
+
+	const Third = spy({
+		id: 'third',
+		handle(chain) {log.push(chain)},
+	})(Second);
+
+	mount(<Third/>).find('.js-click').simulate('click');
+	expect(log).toEqual([
+		['third', 'click'],
+	]);
+});
+
 //
 // it('decorator', () => {
 // 	const log = [];

@@ -10,7 +10,8 @@
       "dom",
       "es5",
       "es2015.promise",
-      "es2016.array.include"
+      "es2016.array.include",
+      "es2015.symbol"
     ]
   },
   "exclude": [

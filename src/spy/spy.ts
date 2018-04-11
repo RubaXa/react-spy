@@ -8,11 +8,12 @@ let cid = 0;
 const F = function () {};
 const postfix = Date.now().toString(36);
 
-const __spy__ = `__options-${postfix}__`;
-const __spyContext__ = `__context-${postfix}__`;
-const __spyDOMNode__ = `__domNode-${postfix}__`;
-const __spyHandle__ = `__handle-${postfix}__`;
-const __spyLocalSend__ = `__localSend-${postfix}__`;
+const __spy__ = `__spy:options-${postfix}__`;
+const __spyProp__ = `__spy:prop-${postfix}__`;
+const __spyContext__ = `__spy:context-${postfix}__`;
+const __spyDOMNode__ = `__spy:domNode-${postfix}__`;
+const __spyHandle__ = `__spy:handle-${postfix}__`;
+const __spyLocalSend__ = `__spy:localSend-${postfix}__`;
 
 const __cid__ = `__cid-${postfix}__`;
 const __props__ = `__props-${postfix}__`;
@@ -136,7 +137,13 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 
 			set(origProps) {
 				if (this[__patchedProps__] !== origProps) {
-					const patchedProps = {...origProps};
+					const patchedProps = {
+						...origProps,
+						[__spyProp__]: {
+							options,
+							context: this.context,
+						},
+					};
 
 					// Удачем свойство отвечающее за `id`
 					delete patchedProps[options.propName];
@@ -225,22 +232,22 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 };
 
 function getSpyChain(component: React.Component) {
-	const id = getSpyId(component);
+	const descr = getSpyDescr(component);
 	const chain = [];
 
-	if (id != null) {
-		let parent = component;
+	if (descr !== null) {
+		let parent = descr;
 
 		while (parent = (parent.context && parent.context[__spyContext__])) {
-			const nextId = getSpyId(parent);
+			const nextDescr = getSpyDescr(parent);
 
-			if (nextId) {
-				chain.unshift(nextId);
+			if (nextDescr !== null) {
+				chain.unshift(nextDescr.id);
 				if (isHost(parent)) break;
 			}
 		}
 
-		chain.push(id);
+		chain.push(descr.id);
 	}
 
 	return chain;
@@ -250,7 +257,7 @@ function send(component: React.Component, chain: string | string[], detail?: obj
 	let fullChain = getSpyChain(component);
 
 	if (fullChain.length) {
-		const {handle} = component[__spy__];
+		const {handle} = getSpyOptions(component);
 
 		fullChain = fullChain.concat(chain);
 
@@ -277,24 +284,50 @@ export default spy;
 //
 // Всякие приватные методы
 //
-function getSpyId(component): string {
-	let value;
+function getSpyOptions(component): SpyOptions<object> {
+	if (component.hasOwnProperty(__spy__)) {
+		return component[__spy__];
+	} else if (component.props.hasOwnProperty(__spyProp__)) {
+		return component.props[__spyProp__].options;
+	}
+
+	return {};
+}
+
+function getSpyDescr(component): null | {id: string; options: object; context: object;} {
+	let context = null;
+	let options = null;
+	let value = null;
 
 	if (component.hasOwnProperty(__spy__)) {
-		const {id, propName} = component[__spy__];
-		const props = component[__props__];
+		options = component[__spy__];
+		context = component.context;
+	} else if (component.props.hasOwnProperty(__spyProp__)) {
+		options = component.props[__spyProp__].options;
+		context = component.props[__spyProp__].context;
+	}
+
+	if (options !== null) {
+		const {id, propName} = options;
+		const props = component.hasOwnProperty(__props__) ? component[__props__] : component.props;
 		value = props[propName];
 
 		if (value == null) {
 			value = typeof id === 'function' ? id(props, component.context) : id;
 		}
+
+		return {
+			id: value,
+			options,
+			context,
+		}
 	}
 
-	return value;
+	return null;
 }
 
 function isHost(component): boolean {
-	return component[__spy__].host
+	return component[__spy__].host;
 }
 
 function spyHandleEvent(component, {type, target}: Event) {
