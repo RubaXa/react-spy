@@ -16,7 +16,6 @@ export function addSpyObserver(fn: ObserverFn): UnsubsriberFn {
 	};
 }
 
-
 export function addSpyErrorObserver(fn: ErrorObserverFn): UnsubsriberFn {
 	errorObservers.push(fn);
 

@@ -1,4 +1,5 @@
 import spy from './spy';
+import {addSpyObserver} from '../observer/observer';
 import * as React from 'react';
 import {mount} from 'enzyme';
 
@@ -181,6 +182,22 @@ it('InHOC', () => {
 		['third', 'click'],
 	]);
 });
+
+it('spy.send', () => {
+	const log = [];
+	const done = addSpyObserver((chain, detail) => {
+		log.push(chain, detail);
+	});
+
+	spy.send('ok');
+	spy.send(['foo', 'bar'], {bar: true});
+
+	expect(log).toEqual([
+		['ok'], {},
+		['foo', 'bar'], {bar: true},
+	]);
+	done();
+})
 
 //
 // it('decorator', () => {

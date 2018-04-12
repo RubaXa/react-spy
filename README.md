@@ -239,6 +239,8 @@ const SomeFragment = ({condition, onShowDetail}) => (
 import {broadcast} from 'react-spy';
 
 broadcast(['custom', 'event', 'chain'], {value: 'Wow'});
+// or just
+//   spy.send(['custom', 'event', 'chain'], {value: 'Wow'})
 ```
 
 ---

@@ -24,3 +24,6 @@ export function setHiddenField(tgrget, name, value, writable = false) {
 	});
 }
 
+export function isComponent(x: any) {
+	return x && (typeof x === 'function' || x.render);
+}

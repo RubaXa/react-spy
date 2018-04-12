@@ -1,6 +1,11 @@
 import spy from './src/spy/spy';
 import {intercept, UNCAUGHT} from './src/intercept/intercept';
-import {addSpyObserver, addSpyErrorObserver, broadcastError, broadcast} from './src/observer/observer';
+import {
+	addSpyObserver,
+	addSpyErrorObserver,
+	broadcast,
+	broadcastError,
+} from './src/observer/observer';
 import Spy from './src/component/component';
 
 export {

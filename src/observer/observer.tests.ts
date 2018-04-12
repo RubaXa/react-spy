@@ -6,10 +6,6 @@ it('addSpyObserver', () => {
 		log.push(chain, detail);
 	});
 
-	afterEach(() => {
-		unsubsribe();
-	});
-
 	broadcast(['foo']);
 	broadcast(['bar'], {val: 1});
 
@@ -19,6 +15,11 @@ it('addSpyObserver', () => {
 		['bar'],
 		{val: 1},
 	]);
+
+	unsubsribe();
+	log.length = 0;
+	broadcast(['fail']);
+	expect(log).toEqual([]);
 });
 
 

@@ -1,7 +1,7 @@
 import {Component, ComponentClass, StatelessComponent} from 'react';
 import {findDOMNode} from 'react-dom';
 import {object as objectType, string as stringType} from 'prop-types';
-import {setHiddenField, toComponentClass} from '../utils/utils';
+import {setHiddenField, toComponentClass, isComponent} from '../utils/utils';
 import {broadcast, broadcastError} from '../observer/observer';
 
 let cid = 0;
@@ -41,7 +41,8 @@ export interface SpyOptions<Props> {
 
 export interface ISpy {
 	<Props>(options: SpyOptions<Props & {spyId?: string}>): ComponentDecorator<Props>;
-	send?: (component: Component, chain: string | string[], detail?: object) => void;
+	send?(chain: string | string[], detail?: object): void;
+	send?(component: Component, chain: string | string[], detail?: object): void;
 }
 
 const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
@@ -49,9 +50,9 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		listen = [],
 		callbacks = {},
 	} = options;
-	const hasErrorEvent = listen.includes('error');
-	const hasMountEvent = listen.includes('mount');
-	const hasUnmountEvent = listen.includes('unmount');
+	const hasErrorEvent = listen.indexOf('error') > -1;
+	const hasMountEvent = listen.indexOf('mount') > -1;
+	const hasUnmountEvent = listen.indexOf('unmount') > -1;
 	const callbackKeys = Object.keys(callbacks);
 
 	if (!options.propName) {
@@ -253,19 +254,28 @@ function getSpyChain(component: React.Component) {
 	return chain;
 }
 
-function send(component: React.Component, chain: string | string[], detail?: object) {
-	let fullChain = getSpyChain(component);
+function send(chain: string | string[], detail?: object);
+function send(component: React.Component, chain: string | string[], detail?: object);
+function send() {
+	if (isComponent(arguments[0])) {
+		const component = arguments[0];
+		const chain = arguments[1];
+		const detail = arguments[2];
+		let fullChain = getSpyChain(component);
 
-	if (fullChain.length) {
-		const {handle} = getSpyOptions(component);
+		if (fullChain.length) {
+			const {handle} = getSpyOptions(component);
 
-		fullChain = fullChain.concat(chain);
+			fullChain = fullChain.concat(chain);
 
-		if (handle && handle(fullChain) === false) {
-			return;
+			if (handle && handle(fullChain) === false) {
+				return;
+			}
+
+			broadcast(fullChain, detail);
 		}
-
-		broadcast(fullChain, detail);
+	} else {
+		broadcast([].concat(arguments[0]), arguments[1]);
 	}
 }
 
@@ -340,7 +350,7 @@ function spyHandleEvent(component, {type, target}: Event) {
 		if (allListeners) {
 			if (allListeners.hasOwnProperty(cid)) {
 				break;
-			} else if (allListeners.includes(type)) {
+			} else if (allListeners.indexOf(type) > -1) {
 				return; // exit
 			}
 		}
