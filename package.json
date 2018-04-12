@@ -1,6 +1,6 @@
 {
   "name": "react-spy",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A set of utilities for collecting UX-analytics of your React-application (ex: clicks, shows, errors and etc.)",
   "author": "RubaXa <ibnRubaXa@gmail.com",
   "license": "MIT",
