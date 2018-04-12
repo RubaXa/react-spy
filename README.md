@@ -259,9 +259,12 @@ broadcast(['custom', 'event', 'chain'], {value: 'Wow'});
 import {broadcastError} from 'react-spy';
 
 broadcastError({
-	error: new Error('Internal Error'),
 	chain: ['login', 'submit', 'failed'],
+	error: new Error('Internal Error'),
 });
+// or just
+//   spy.error('localStorage', new Error('Read'));
+//   spy.error(thisReactCmp, 'localStorage', new Error('save'));
 ```
 
 ---

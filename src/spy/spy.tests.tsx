@@ -1,5 +1,5 @@
 import spy from './spy';
-import {addSpyObserver} from '../observer/observer';
+import {addSpyObserver, addSpyErrorObserver} from '../observer/observer';
 import * as React from 'react';
 import {mount} from 'enzyme';
 
@@ -197,7 +197,38 @@ it('spy.send', () => {
 		['foo', 'bar'], {bar: true},
 	]);
 	done();
-})
+});
+
+it('spy.error', () => {
+	const log = [];
+	const done = addSpyErrorObserver((detail) => {
+		log.push(detail);
+	});
+	const barErr = new Error('bar');
+	const boomErr = new Error('boom');
+	const Cmp = spy<null>({id: 'root-block'})(class extends React.Component<null, null> {
+		render() {
+			return <div className="js-click" onClick={() => {
+				spy.error(this, 'oops', boomErr);
+			}}/>;
+		}
+	});
+
+	spy.error('foo', barErr);
+	mount(<Cmp/>).find('.js-click').simulate('click');
+
+	expect(log).toEqual([
+		{
+			chain: ['foo'],
+			error: barErr,
+		},
+		{
+			chain: ['root-block', 'oops'],
+			error: boomErr,
+		},
+	]);
+	done();
+});
 
 //
 // it('decorator', () => {

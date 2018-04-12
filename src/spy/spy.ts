@@ -41,8 +41,12 @@ export interface SpyOptions<Props> {
 
 export interface ISpy {
 	<Props>(options: SpyOptions<Props & {spyId?: string}>): ComponentDecorator<Props>;
+
 	send?(chain: string | string[], detail?: object): void;
 	send?(component: Component, chain: string | string[], detail?: object): void;
+
+	error?(chain: string | string[], error: Error): void;
+	error?(component: Component, chain: string | string[], error: Error): void;
 }
 
 const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
@@ -261,26 +265,55 @@ function send() {
 		const component = arguments[0];
 		const chain = arguments[1];
 		const detail = arguments[2];
-		let fullChain = getSpyChain(component);
+		let rootChain = getSpyChain(component);
 
-		if (fullChain.length) {
+		if (rootChain.length) {
 			const {handle} = getSpyOptions(component);
 
-			fullChain = fullChain.concat(chain);
+			rootChain = rootChain.concat(chain);
 
-			if (handle && handle(fullChain) === false) {
+			if (handle && handle(rootChain) === false) {
 				return;
 			}
 
-			broadcast(fullChain, detail);
+			broadcast(rootChain, detail);
 		}
 	} else {
 		broadcast([].concat(arguments[0]), arguments[1]);
 	}
 }
 
+function error(chain: string | string[], error: Error);
+function error(component: React.Component, chain: string | string[], error: Error);
+function error() {
+	if (isComponent(arguments[0])) {
+		const rootChain = getSpyChain(arguments[0]);
+		const chain = arguments[1];
+		const error = arguments[2];
+
+
+		if (rootChain.length) {
+			broadcastError({
+				chain: rootChain.concat(chain),
+				error,
+			});
+		} else {
+			broadcastError({
+				chain: ['UNKNOWN'].concat(chain),
+				error,
+			});
+		}
+	} else {
+		broadcastError({
+			chain: [].concat(arguments[0]),
+			error: arguments[1],
+		});
+	}
+}
+
 // Export
 spy.send = send;
+spy.error = error;
 export {
 	__spy__,
 	__spyDOMNode__,
