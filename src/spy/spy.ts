@@ -11,6 +11,7 @@ const postfix = Date.now().toString(36);
 const __spy__ = `__spy:options-${postfix}__`;
 const __spyProp__ = `__spy:prop-${postfix}__`;
 const __spyContext__ = `__spy:context-${postfix}__`;
+const __spyContextParent__ = `__spy:context-parent-${postfix}__`;
 const __spyDOMNode__ = `__spy:domNode-${postfix}__`;
 const __spyHandle__ = `__spy:handle-${postfix}__`;
 const __spyLocalSend__ = `__spy:localSend-${postfix}__`;
@@ -317,7 +318,7 @@ function error() {
 
 function contextTypes() {
 	return {
-		[__spyContext__ as '__REACT:SPY:PRIVATE:PROP__']: objectType,
+		[__spyContextParent__ as '__REACT:SPY:PRIVATE:PROP__']: objectType,
 	};
 }
 
@@ -354,8 +355,8 @@ function getSpyDescr(component): null | {id: string; options: object; context: o
 	let options = null;
 	let value = null;
 
-	if (component.context && component.context.hasOwnProperty(__spyContext__)) {
-		component = component.context[__spyContext__];
+	if (component.context && component.context.hasOwnProperty(__spyContextParent__)) {
+		component = component.context[__spyContextParent__] ;
 	}
 
 	if (component.hasOwnProperty(__spy__)) {
