@@ -50,7 +50,8 @@ export interface ISpy {
 	error?(component: Component, chain: string | string[], error: Error): void;
 
 	contextTypes?(): {
-		'__REACT:SPY:PRIVATE:PROP__': Requireable<string>,
+		'__REACT:SPY:PRIVATE:CTX__': Requireable<any>,
+		'__REACT:SPY:PRIVATE:CTX:FLAG__': Requireable<string>,
 	};
 }
 
@@ -318,7 +319,8 @@ function error() {
 
 function contextTypes() {
 	return {
-		[__spyContextParent__ as '__REACT:SPY:PRIVATE:PROP__']: objectType,
+		[__spyContext__ as '__REACT:SPY:PRIVATE:CTX__']: objectType,
+		[__spyContextParent__ as '__REACT:SPY:PRIVATE:CTX:FLAG__']: objectType,
 	};
 }
 
@@ -356,7 +358,10 @@ function getSpyDescr(component): null | {id: string; options: object; context: o
 	let value = null;
 
 	if (component.context && component.context.hasOwnProperty(__spyContextParent__)) {
-		component = component.context[__spyContextParent__] ;
+		component = component.context[__spyContext__] ;
+		if (component == null) {
+			return null;
+		}
 	}
 
 	if (component.hasOwnProperty(__spy__)) {
