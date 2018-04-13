@@ -354,6 +354,10 @@ function getSpyDescr(component): null | {id: string; options: object; context: o
 	let options = null;
 	let value = null;
 
+	if (component.context && component.context.hasOwnProperty(__spyContext__)) {
+		component = component.context[__spyContext__];
+	}
+
 	if (component.hasOwnProperty(__spy__)) {
 		options = component[__spy__];
 		context = component.context;
