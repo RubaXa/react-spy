@@ -1,6 +1,6 @@
 import {Component, ComponentClass, StatelessComponent} from 'react';
 import {findDOMNode} from 'react-dom';
-import {object as objectType, string as stringType} from 'prop-types';
+import {Requireable, object as objectType, string as stringType} from 'prop-types';
 import {setHiddenField, toComponentClass, isComponent} from '../utils/utils';
 import {broadcast, broadcastError} from '../observer/observer';
 
@@ -47,6 +47,10 @@ export interface ISpy {
 
 	error?(chain: string | string[], error: Error): void;
 	error?(component: Component, chain: string | string[], error: Error): void;
+
+	contextTypes?(): {
+		'__REACT:SPY:PRIVATE:PROP__': Requireable<string>,
+	};
 }
 
 const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
@@ -311,9 +315,17 @@ function error() {
 	}
 }
 
+function contextTypes() {
+	return {
+		[__spyContext__ as '__REACT:SPY:PRIVATE:PROP__']: objectType,
+	};
+}
+
 // Export
 spy.send = send;
 spy.error = error;
+spy.contextTypes = contextTypes;
+
 export {
 	__spy__,
 	__spyDOMNode__,
