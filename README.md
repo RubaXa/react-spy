@@ -14,6 +14,8 @@ npm i --save react-spy
 
 ### API
  - [spy](#spy) — decorator of react-components
+  - [spy.send](#spy-send) — send stats from the component and not only
+  - [spy.error](#spy-error) — send an error from the component and not only
  - [addSpyObserver](#addSpyObserver) — add observer of events
  - [addSpyErrorObserver](#addSpyErrorObserver) — add observer of errors
  - [intercept](#intercept) — intercepting a chain of events
@@ -125,6 +127,49 @@ export default spy({
 />
 // *click* -> ["login", "click"]
 ```
+
+---
+
+<a name="spy-send"></a>
+#### `spy.send(cmp: React.Component, chain: string | string [], detail?: object): void`
+Send stats from the component and not only
+
+ - **cmp**: `React.Component` — instance of `React.Component`
+ - **chain**: `string | string[]` — name of metric
+ - **detail**: `object`
+
+```js
+import {spy} from 'react-spy';
+
+export default spy({id: 'parent'})(class Box extends React.Component {
+	render() {
+		return (
+			<button onClick={() => {spy.send(this, 'foo');}}>First</button>
+			<button onClick={() => {spy.send(this, ['bar', 'baz'], {val: 123});}}>Second</button>
+		);
+	}
+});
+
+// Somewhere in a code
+//   click on <First>:
+//     - ["parent", "foo"] {}
+//   click on <Second>:
+//     - ["parent", "bar", "baz"] {val: 123}
+//
+// Somewhere in an another place:
+//    spy.send(['global', 'label'], {time: 321}):
+//      - ["global", "label"] {time: 321}
+```
+
+---
+
+<a name="spy-error"></a>
+#### `spy.error(cmp: React.Component, chain: string | string [], error: Error): void`
+send an error from the component and not only
+
+ - **cmp**: `React.Component` — instance of `React.Component`
+ - **chain**: `string | string[]` — name of metric
+ - **error**: `Error` — any an error
 
 ---
 
