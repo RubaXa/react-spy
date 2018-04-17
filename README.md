@@ -14,8 +14,8 @@ npm i --save react-spy
 
 ### API
  - [spy](#spy) — decorator of react-components
-  - [spy.send](#spy-send) — send stats from the component and not only
-  - [spy.error](#spy-error) — send an error from the component and not only
+   - [spy.send](#spy-send) — send stats from the component and not only
+   - [spy.error](#spy-error) — send an error from the component and not only
  - [addSpyObserver](#addSpyObserver) — add observer of events
  - [addSpyErrorObserver](#addSpyErrorObserver) — add observer of errors
  - [intercept](#intercept) — intercepting a chain of events
