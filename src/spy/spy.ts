@@ -64,9 +64,11 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 	const hasMountEvent = listen.indexOf('mount') > -1;
 	const hasUnmountEvent = listen.indexOf('unmount') > -1;
 	const callbackKeys = Object.keys(callbacks);
+	let propNameDefined = true;
 
 	if (!options.propName) {
 		options.propName = 'spyId';
+		propNameDefined = true;
 	}
 
 	return ((OrigComponent: CmpClass<Props & {spyId?: string}>) => {
@@ -156,8 +158,9 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 						},
 					};
 
-					// Удачем свойство отвечающее за `id`
-					delete patchedProps[options.propName];
+					if (!propNameDefined) {
+						delete patchedProps[options.propName];
+					}
 
 					if (callbackKeys.length) {
 						// Override callbacks
