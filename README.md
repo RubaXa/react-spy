@@ -104,7 +104,8 @@ ReactDOM.render(<App/>, document.body);
 Decorate the component to collect analytics
 
  - `options`
-   - **id**: `string | (props, context?) => string` — default `id`
+   - **id**: `string | (props, context?) => string` — default @see `propName` description
+   - **propName**: `string` — prop-name for `id`, by default `spyId`
    - **listen**: `string[]` — DOM-events to listen + `error`, `mount` and `unmount`
    - **callbacks** — list of observed callbacks that are passed to it via `props`
    - **propName**: `string` — name of the property responsible for the spy's `id`, by default` spyId`
