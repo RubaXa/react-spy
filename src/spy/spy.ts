@@ -21,13 +21,17 @@ const __props__ = `__props-${postfix}__`;
 const __patchedProps__ = `__patchedProps-${postfix}__`;
 const __usePatchedProps__ = `__usePatchedProps-${postfix}__`;
 
-export type CmpClass<P> = ComponentClass<P> | StatelessComponent<P>;
-export type SpywareClass<P> = ComponentClass<P & {spyId?: string}>;
-export type ComponentDecorator<P> = (Class: CmpClass<P>) => SpywareClass<P>;
+export type Spied = {
+	spyId?: string;
+};
 
-export interface SpyOptions<Props> {
+export type CmpClass<P> = ComponentClass<P> | StatelessComponent<P>;
+export type SpywareClass<P extends Spied> = ComponentClass<P>;
+export type ComponentDecorator<P> = (Class: CmpClass<P>) => SpywareClass<P & Spied>;
+
+export interface SpyOptions<Props extends object> {
 	id?: string | ((props: Props, context: object) => string);
-	propName?: string;
+	propName?: keyof Props;
 	host?: boolean;
 	listen?: string[];
 	handle?: (chain: string[]) => boolean | void;
@@ -41,7 +45,7 @@ export interface SpyOptions<Props> {
 }
 
 export interface ISpy {
-	<Props>(options: SpyOptions<Props & {spyId?: string}>): ComponentDecorator<Props>;
+	<Props extends object>(options: SpyOptions<Props>): ComponentDecorator<Props>;
 
 	send?(chain: string | string[], detail?: object): void;
 	send?(component: Component, chain: string | string[], detail?: object): void;
@@ -55,7 +59,7 @@ export interface ISpy {
 	};
 }
 
-const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
+const spy: ISpy = function spy<Props extends Spied>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
 	const {
 		listen = [],
 		callbacks = {},
@@ -71,9 +75,9 @@ const spy: ISpy = function spy<Props>(options: SpyOptions<Props> = {}): Componen
 		propNameDefined = true;
 	}
 
-	return ((OrigComponent: CmpClass<Props & {spyId?: string}>) => {
+	return ((OrigComponent: CmpClass<Props>) => {
 		// Создаём наследника и патчим его
-		class SpywareComponent extends toComponentClass<Props & {spyId?: string}>(OrigComponent) {
+		class SpywareComponent extends toComponentClass<Props>(OrigComponent) {
 			constructor(props, context: object) {
 				super(props, context);
 
@@ -446,5 +450,15 @@ function overrideCallback(send, props, originalMethod, spyFn) {
 	return function (...args) {
 		spyFn(send, args, props);
 		return originalMethod && originalMethod.apply(this, args);
+	};
+}
+
+
+/**
+ * Component decorator
+ */
+export function withSpy<P extends Spied>(options: SpyOptions<P>) {
+	return function withSpyDecor<CMP extends ComponentClass<P>>(Component: CMP) {
+		return spy<P>(options)(Component) as any;
 	};
 }

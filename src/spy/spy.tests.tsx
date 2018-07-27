@@ -1,10 +1,14 @@
-import spy from './spy';
+import spy, { Spied, withSpy } from './spy';
 import {addSpyObserver, addSpyErrorObserver} from '../observer/observer';
 import * as React from 'react';
 import {mount} from 'enzyme';
 
 interface Props {
 }
+
+interface SpiedProps extends Spied {
+}
+
 
 interface OnProps {
 	onClick?: (evt) => {}
@@ -107,7 +111,7 @@ it('Nestend', () => {
 
 it('callbacks', () => {
 	const log = [];
-	const Foo = spy<OnProps>({
+	const Foo = spy({
 		id: 'foo',
 		handle(chain) {log.push(chain)},
 		callbacks: {
@@ -152,6 +156,28 @@ it('custom', () => {
 
 	expect(log).toEqual([
 		['foo', 'custom', 'press'],
+	]);
+});
+
+it('propName', () => {
+	type PropsWithName = {
+		name: string;
+	}
+
+	const log = [];
+	const Foo = spy({
+		propName: 'name',
+		listen: ['mount'],
+		handle(chain) {log.push(chain)},
+	})(class extends React.Component<PropsWithName, null> {
+		render() {
+			return <div/>;
+		}
+	});
+
+	mount(<Foo name="btn"/>);
+	expect(log).toEqual([
+		['btn', 'mount'],
 	]);
 });
 
@@ -230,22 +256,26 @@ it('spy.error', () => {
 	done();
 });
 
-//
-// it('decorator', () => {
-// 	const log = [];
-//
-// 	@spy<Props>({handle(chain) {log.push(chain)}})
-// 	class Foo extends React.Component<Props, null> {
-// 		render() {
-// 			return <div className="js-click">123</div>;
-// 		}
-// 	}
-//
-// 	const wrapper = mount(<Foo spyId="xxx"/>);
-//
-// 	wrapper.find('.js-click').simulate('click');
-//
-// 	expect(log).toEqual([
-// 		['xxx', 'click'],
-// 	]);
-// });
+
+it('decorator', () => {
+	const log = [];
+
+	@withSpy({
+		listen: ['mount'],
+		handle(chain) {
+			log.push(chain);
+		}
+	})
+	class Foo extends React.Component<SpiedProps, null> {
+		render() {
+			return <div/>;
+		}
+	}
+
+	expect(Foo['displayName']).toBe('Spy(Foo)');
+	mount(<Foo spyId="spied"/>);
+
+	expect(log).toEqual([
+		['spied', 'mount'],
+	]);
+});
