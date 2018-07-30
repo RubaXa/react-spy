@@ -280,7 +280,7 @@ const SomeFragment = ({condition, onShowDetail}) => (
 ---
 
 <a name="SpyStep"></a>
-#### `<SpyStep/>`
+#### `<SpyStep name="..."/>`
 The hidden spy element for steps monitoring
 
  - **name**: `string` — a step name
