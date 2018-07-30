@@ -287,8 +287,6 @@ The hidden spy element for steps monitoring
  - **enter**: `string | string[]` — the enter phase (optional)
  - **leave**: `string | string[]` — the leave phase (optional)
 
-```
-
 ---
 
 <a name="broadcast"></a>
