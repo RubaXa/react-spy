@@ -21,6 +21,7 @@ npm i --save react-spy
  - [intercept](#intercept) — intercepting a chain of events
  - Components
    - [Spy](#Spy)
+   - [SpyStep](#SpyStep)
  - Low Level
    - [broadcast](#broadcast) — broadcast any chain of events
    - [broadcastError](#broadcastError) — broadcast any error
@@ -274,6 +275,18 @@ const SomeFragment = ({condition, onShowDetail}) => (
 
 // 1. *click on button* -> ["top", "detail", "click"]
 // 2. *mounting* -> ["bottom", "mount"]
+```
+
+---
+
+<a name="SpyStep"></a>
+#### `<SpyStep/>`
+The hidden spy element for steps monitoring
+
+ - **name**: `string` — a step name
+ - **enter**: `string | string[]` — the enter phase (optional)
+ - **leave**: `string | string[]` — the leave phase (optional)
+
 ```
 
 ---

@@ -54,7 +54,7 @@ export interface ISpy {
 	error?(component: Component, chain: string | string[], error: Error): void;
 
 	contextTypes?(): {
-		'__REACT:SPY:PRIVATE:CTX__': Requireable<any>,
+		'__REACT:SPY:PRIVATE:CTX__': Requireable<object>,
 		'__REACT:SPY:PRIVATE:CTX:FLAG__': Requireable<string>,
 	};
 }
@@ -260,12 +260,12 @@ function getSpyChain(component: React.Component) {
 			const nextDescr = getSpyDescr(parent);
 
 			if (nextDescr !== null) {
-				chain.unshift(nextDescr.id);
+				(nextDescr.id != null) && chain.unshift(nextDescr.id);
 				if (isHost(parent)) break;
 			}
 		}
 
-		chain.push(descr.id);
+		(descr.id != null) && chain.push(descr.id);
 	}
 
 	return chain;
@@ -327,7 +327,7 @@ function error() {
 function contextTypes() {
 	return {
 		[__spyContext__ as '__REACT:SPY:PRIVATE:CTX__']: objectType,
-		[__spyContextParent__ as '__REACT:SPY:PRIVATE:CTX:FLAG__']: objectType,
+		[__spyContextParent__ as '__REACT:SPY:PRIVATE:CTX:FLAG__']: stringType,
 	};
 }
 
@@ -457,7 +457,7 @@ function overrideCallback(send, props, originalMethod, spyFn) {
 /**
  * Component decorator
  */
-export function withSpy<P extends Spied>(options: SpyOptions<P>) {
+export function withSpy<P extends object>(options: SpyOptions<P>) {
 	return function withSpyDecor<CMP extends ComponentClass<P>>(Component: CMP) {
 		return spy<P>(options)(Component) as any;
 	};
