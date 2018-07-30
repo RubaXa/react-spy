@@ -23,7 +23,7 @@ const __usePatchedProps__ = `__usePatchedProps-${postfix}__`;
 
 export type Spied = {
 	spyId?: string;
-};
+}
 
 export type CmpClass<P> = ComponentClass<P> | StatelessComponent<P>;
 export type SpywareClass<P extends Spied> = ComponentClass<P>;
@@ -95,6 +95,7 @@ const spy: ISpy = function spy<Props extends Spied>(options: SpyOptions<Props> =
 		// Получаем прототип для патчинга
 		const proto = SpywareComponent.prototype as (Component & {
 			getChildContext();
+			componentDidCatch(error: Error, info: object);
 			childContextTypes: object;
 		});
 
