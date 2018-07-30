@@ -1,9 +1,9 @@
 import * as React from 'react';
-import spy, {__spy__, __spyDOMNode__, getSpyChain, setupListeners, SpyOptions} from '../spy/spy';
+import spy, {__spy__, __spyDOMNode__, getSpyChain, setupListeners, SpyOptions, Spied} from '../spy/spy';
 import {findDOMNode} from 'react-dom';
 import {setHiddenField} from '../utils/utils';
 import {broadcastError} from '../observer/observer';
-export type SpyProps = SpyOptions<{}> & {children: JSX.Element};
+export type SpyProps = SpyOptions<Spied> & {children: JSX.Element};
 
 const {isArray} = Array;
 
