@@ -21,13 +21,13 @@ it('SpyStep', () => {
 	});
 
 	const form = mount(<Form step="foo"/>);
-	expect(form.html()).toBe('<div><div></div>foo</div>');
+	expect(form.text()).toBe('foo');
 
 	form.setProps({step: 'bar'});
-	expect(form.html()).toBe('<div><div></div>bar</div>');
+	expect(form.text()).toBe('bar');
 
 	form.setProps({step: 'qux'});
-	expect(form.html()).toBe('<div><div></div>qux</div>');
+	expect(form.text()).toBe('qux');
 
 	form.unmount();
 
