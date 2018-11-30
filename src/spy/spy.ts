@@ -59,7 +59,7 @@ export interface ISpy {
 	};
 }
 
-const spy: ISpy = function spy<Props extends Spied>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
+const spy = function spy<Props extends Spied>(options: SpyOptions<Props> = {}): ComponentDecorator<Props> {
 	const {
 		listen = [],
 		callbacks = {},
@@ -248,7 +248,7 @@ const spy: ISpy = function spy<Props extends Spied>(options: SpyOptions<Props> =
 
 		return SpywareComponent;
 	});
-};
+} as ISpy;
 
 function getSpyChain(component: React.Component) {
 	const descr = getSpyDescr(component);
