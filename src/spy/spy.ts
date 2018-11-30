@@ -47,11 +47,11 @@ export interface SpyOptions<Props extends object> {
 export interface ISpy {
 	<Props extends object>(options: SpyOptions<Props>): ComponentDecorator<Props>;
 
-	send?(chain: string | string[], detail?: object): void;
-	send?(component: Component, chain: string | string[], detail?: object): void;
+	send(chain: string | string[], detail?: object): void;
+	send(component: Component, chain: string | string[], detail?: object): void;
 
-	error?(chain: string | string[], error: Error): void;
-	error?(component: Component, chain: string | string[], error: Error): void;
+	error(chain: string | string[], error: Error): void;
+	error(component: Component, chain: string | string[], error: Error): void;
 
 	contextTypes?(): {
 		'__REACT:SPY:PRIVATE:CTX__': Requireable<object>,
