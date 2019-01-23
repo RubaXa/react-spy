@@ -3,6 +3,7 @@ import spy, { withSpy } from '../spy/spy';
 
 export type SpyStepProps = {
 	name: string;
+	host?: boolean;
 	enter?: string | string[];
 	leave?: string | string[];
 }
@@ -12,24 +13,33 @@ const array = [];
 @withSpy({
 	id: null,
 })
-export class SpyStep extends React.Component<SpyStepProps, null> {
-	private getValue(props: SpyStepProps, type: keyof SpyStepProps): string[] {
-		return array.concat(props.name, props[type] == null ? type : props[type]);
+export class SpyStep extends React.Component<SpyStepProps, {}> {
+	private send(type: keyof SpyStepProps, props: SpyStepProps = this.props): void {
+		const chain = array.concat(
+			props.name,
+			props[type] == null ? type : props[type],
+		);
+
+		if (props.host) {
+			spy.send(chain);
+		} else {
+			spy.send(this, chain);
+		}
 	}
 
 	componentDidMount() {
-		spy.send(this, this.getValue(this.props, 'enter'));
+		this.send('enter');
 	}
 
 	componentDidUpdate(prevProps) {
 		if (prevProps.name !== this.props.name) {
-			spy.send(this, this.getValue(prevProps, 'leave'));
-			spy.send(this, this.getValue(this.props, 'enter'));
+			this.send('leave', prevProps);
+			this.send('enter');
 		}
 	}
 
 	componentWillUnmount() {
-		spy.send(this, this.getValue(this.props, 'leave'));
+		this.send('leave');
 	}
 
 	render() {

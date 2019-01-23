@@ -49,6 +49,8 @@ export interface ISpy {
 
 	send(chain: string | string[], detail?: object): void;
 	send(component: Component, chain: string | string[], detail?: object): void;
+	send(component: Component<any, null>, chain: string | string[], detail?: object): void;
+	send(component: Component<any, any>, chain: string | string[], detail?: object): void;
 
 	error(chain: string | string[], error: Error): void;
 	error(component: Component, chain: string | string[], error: Error): void;
