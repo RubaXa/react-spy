@@ -41,7 +41,7 @@ function assign(target: InterceptRules, rules: InterceptRules, chain: string[] =
 	});
 }
 
-function find(rules: InterceptRules, chain: string[], idx: number, uncaught?): Interceptor | null {
+function find(rules: InterceptRules, chain: string[], idx: number, uncaught?: Interceptor): Interceptor | null {
 	const id = chain[idx];
 	const rule = rules[id];
 

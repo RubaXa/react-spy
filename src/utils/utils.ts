@@ -16,7 +16,7 @@ export function toComponentClass<P>(Target: ComponentClass<P> | StatelessCompone
 	}
 }
 
-export function setHiddenField(tgrget, name, value, writable = false) {
+export function setHiddenField(tgrget: object, name: string, value: any, writable = false) {
 	Object.defineProperty(tgrget, name, {
 		configurable: false,
 		writable,
@@ -24,6 +24,6 @@ export function setHiddenField(tgrget, name, value, writable = false) {
 	});
 }
 
-export function isComponent(x: any) {
+export function isComponent(x: any): boolean {
 	return x && (typeof x === 'function' || x.render);
 }

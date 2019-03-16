@@ -8,16 +8,16 @@ export type SpyProps = SpyOptions<Spied> & {children: JSX.Element};
 const {isArray} = Array;
 
 class Wrapper extends React.PureComponent<SpyProps> {
-	constructor(props, context) {
+	constructor(props: SpyProps, context: object) {
 		super(props, context);
 		this[__spy__] = props;
 	}
 
-	componentWillReceiveProps(newProps) {
+	componentWillReceiveProps(newProps: SpyProps) {
 		this[__spy__] = newProps;
 	}
 
-	componentDidCatch(error, info) {
+	componentDidCatch(error: Error, info: object) {
 		broadcastError({
 			chain: getSpyChain(this),
 			error,
@@ -34,7 +34,7 @@ class Wrapper extends React.PureComponent<SpyProps> {
 		}
 	}
 
-	componentDidUpdate(prevProps) {
+	componentDidUpdate(prevProps: SpyProps) {
 		const {listen} = this.props;
 
 		isArray(prevProps.listen) && setupListeners(this, prevProps.listen, 'remove');

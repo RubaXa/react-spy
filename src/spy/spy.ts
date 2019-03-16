@@ -274,9 +274,9 @@ function getSpyChain(component: React.Component) {
 	return chain;
 }
 
-function send(chain: string | string[], detail?: object);
-function send(component: React.Component, chain: string | string[], detail?: object);
-function send() {
+function send(chain: string | string[], detail?: object): void;
+function send(component: React.Component, chain: string | string[], detail?: object): void;
+function send(): void {
 	if (isComponent(arguments[0])) {
 		const component = arguments[0];
 		const chain = arguments[1];
@@ -299,9 +299,9 @@ function send() {
 	}
 }
 
-function error(chain: string | string[], error: Error);
-function error(component: React.Component, chain: string | string[], error: Error);
-function error() {
+function error(chain: string | string[], error: Error): void;
+function error(component: React.Component, chain: string | string[], error: Error): void;
+function error(): void {
 	if (isComponent(arguments[0])) {
 		const rootChain = getSpyChain(arguments[0]);
 		const chain = arguments[1];
@@ -401,11 +401,11 @@ function getSpyDescr(component): null | {id: string; options: object; context: o
 	return null;
 }
 
-function isHost(component): boolean {
+function isHost(component: any): boolean {
 	return component[__spy__].host;
 }
 
-function spyHandleEvent(component, {type, target}: Event) {
+function spyHandleEvent(component: any, {type, target}: Event) {
 	const cid = component[__cid__];
 	let cursor = target as Node;
 
@@ -424,7 +424,7 @@ function spyHandleEvent(component, {type, target}: Event) {
 	send(component, type);
 }
 
-export function setupListeners(component, names, mode: 'add' | 'remove') {
+export function setupListeners(component: any, names: string[], mode: 'add' | 'remove') {
 	const el = component[__spyDOMNode__];
 	const cid = component[__cid__];
 	const handler = component[__spyHandle__];
@@ -449,8 +449,8 @@ export function setupListeners(component, names, mode: 'add' | 'remove') {
 	});
 }
 
-function overrideCallback(send, props, originalMethod, spyFn) {
-	return function (...args) {
+function overrideCallback(send: Function, props: object, originalMethod: Function, spyFn: Function) {
+	return function (...args: any[]) {
 		spyFn(send, args, props);
 		return originalMethod && originalMethod.apply(this, args);
 	};

@@ -31,7 +31,7 @@ export class SpyStep extends React.Component<SpyStepProps, {}> {
 		this.send('enter');
 	}
 
-	componentDidUpdate(prevProps) {
+	componentDidUpdate(prevProps: SpyStepProps) {
 		if (prevProps.name !== this.props.name) {
 			this.send('leave', prevProps);
 			this.send('enter');
